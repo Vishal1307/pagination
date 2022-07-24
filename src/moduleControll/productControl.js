@@ -1,11 +1,32 @@
 const express = require('express')
 const Product= require("..//module/product")
+const {uploadSingle,uploadMany}=require("..//middleware/upload")
 const router=express.Router()
 
-router.post("",async (req,res)=>{
+router.post("/single",uploadSingle("image_url"), async (req,res)=>{
 
     try{
-        const product=await Product.create(req.body)
+        const product=await Product.create({
+            item:req.body.item,
+            image_url:req.file.path,
+            user_id:req.body.user_id
+        })
+        return res.status(200).send(product)
+
+    }
+    catch(err){
+        return res.status(400).send({messages:err.messages})
+    }
+})
+router.post("/many",uploadMany("image_url"), async (req,res)=>{
+
+    try{
+        const filePath=req.file.map((file)=>file.path)
+        const product=await Product.create({
+            item:req.body.item,
+            image_url:filePath,
+            user_id:req.body.user_id
+        })
         return res.status(200).send(product)
 
     }
